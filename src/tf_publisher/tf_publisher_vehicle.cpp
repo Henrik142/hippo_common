@@ -78,6 +78,7 @@ void TfPublisherVehicle::OnVisionPoseCovariance(
 void TfPublisherVehicle::DeclareParameters() {
   DeclareVerticalCameraParameters();
   DeclareFrontCameraParameters();
+  DeclareRgbdCameraParameters();
 }
 
 void TfPublisherVehicle::DeclareCameraParameters(std::string _camera_name,
@@ -151,6 +152,20 @@ void TfPublisherVehicle::DeclareFrontCameraParameters() {
   params_.has_front_camera = declare_parameter(name, false, descr);
   if (params_.has_front_camera) {
     DeclareCameraParameters("front_camera", params_.front_camera);
+  }
+}
+
+void TfPublisherVehicle::DeclareRgbdCameraParameters() {
+  std::string name;
+  rcl_interfaces::msg::ParameterDescriptor descr;
+  std::string descr_text;
+
+  name = "has_rgbd_camera";
+  descr_text = "If vehicle has rgbd camera";
+  descr = param_utils::Description(descr_text, true);
+  params_.has_rgbd_camera = declare_parameter(name, false, descr);
+  if (params_.has_rgbd_camera) {
+    DeclareCameraParameters("rgbd_camera", params_.rgbd_camera);
   }
 }
 
@@ -236,6 +251,37 @@ void TfPublisherVehicle::BroadCastStatic() {
     // same transformation for the vision subtree
     t2.header.frame_id = tf2_utils::frame_id::VisionFrontCameraLink(this);
     t2.child_frame_id = tf2_utils::frame_id::VisionFrontCameraFrame(this);
+    transforms.push_back(t2);
+  }
+
+  if (params_.has_rgbd_camera) {
+    RCLCPP_INFO_STREAM(get_logger(), "Publishing rgbd camera transformation.");
+    geometry_msgs::msg::TransformStamped t;
+    t.transform.translation.x = params_.rgbd_camera.x;
+    t.transform.translation.y = params_.rgbd_camera.y;
+    t.transform.translation.z = params_.rgbd_camera.z;
+    t.transform.rotation.w = params_.rgbd_camera.qw;
+    t.transform.rotation.x = params_.rgbd_camera.qx;
+    t.transform.rotation.y = params_.rgbd_camera.qy;
+    t.transform.rotation.z = params_.rgbd_camera.qz;
+    t.header.frame_id = hippo_common::tf2_utils::frame_id::BaseLink(this);
+    t.child_frame_id = hippo_common::tf2_utils::frame_id::RgbdCameraLink(this);
+    transforms.push_back(t);
+    // same transformation for the vision subtree
+    t.header.frame_id = tf2_utils::frame_id::VisionBaseLink(this);
+    t.child_frame_id = tf2_utils::frame_id::VisionRgbdCameraLink(this);
+    transforms.push_back(t);
+
+    geometry_msgs::msg::TransformStamped t2;
+    t2.transform = hippo_common::tf2_utils::CameraLinkToCameraFrame();
+    t2.header.frame_id =
+        hippo_common::tf2_utils::frame_id::RgbdCameraLink(this);
+    t2.child_frame_id =
+        hippo_common::tf2_utils::frame_id::RgbdCameraFrame(this);
+    transforms.push_back(t2);
+    // same transformation for the vision subtree
+    t2.header.frame_id = tf2_utils::frame_id::VisionRgbdCameraLink(this);
+    t2.child_frame_id = tf2_utils::frame_id::VisionRgbdCameraFrame(this);
     transforms.push_back(t2);
   }
   static_broadcaster_->sendTransform(transforms);

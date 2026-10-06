@@ -79,6 +79,9 @@ static constexpr char kVerticalCameraFrameName[] = "vertical_camera_frame";
 static constexpr char kFrontCameraName[] = "front_camera";
 static constexpr char kFrontCameraLinkName[] = "front_camera_link";
 static constexpr char kFrontCameraFrameName[] = "front_camera_frame";
+static constexpr char kRgbdCameraName[] = "rgbd_camera";
+static constexpr char kRgbdCameraLinkName[] = "rgbd_camera_link";
+static constexpr char kRgbdCameraFrameName[] = "rgbd_camera_frame";
 
 inline std::string Prefix(rclcpp::Node *_node) {
   std::string name = _node->get_namespace();
@@ -144,6 +147,21 @@ inline std::string FrontCameraLink(rclcpp::Node *_node) {
 }
 inline std::string FrontCameraFrame(rclcpp::Node *_node) {
   return Prefix(_node) + "/" + kFrontCameraFrameName;
+}
+inline std::string VisionRgbdCameraLink(rclcpp::Node *_node) {
+  return VisionPrefix(_node) + "/" + kRgbdCameraLinkName;
+}
+inline std::string VisionRgbdCameraFrame(rclcpp::Node *_node) {
+  return Prefix(_node) + "/" + kRgbdCameraName;
+}
+inline std::string RgbdCameraName(rclcpp::Node *_node) {
+  return Prefix(_node) + "/" + kRgbdCameraName;
+}
+inline std::string RgbdCameraLink(rclcpp::Node *_node) {
+  return Prefix(_node) + "/" + kRgbdCameraLinkName;
+}
+inline std::string RgbdCameraFrame(rclcpp::Node *_node) {
+  return Prefix(_node) + "/" + kRgbdCameraFrameName;
 }
 
 inline std::string InertialFrame() { return kInertialName; }
